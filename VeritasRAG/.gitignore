@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data (large files)
+data/raw/
+data/processed/
+*.csv
+*.tsv
+*.parquet
+!data/sample_corpus.json
+
+# Model artifacts
+models/
+checkpoints/
+*.pt
+*.bin
+*.onnx
+
+# Logs
+wandb/
+runs/
+*.log
+
+# Environment
+.env

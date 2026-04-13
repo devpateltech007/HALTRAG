@@ -1,0 +1,58 @@
+[
+  {
+    "id": "med_001",
+    "domain": "medical",
+    "title": "Metformin and Type 2 Diabetes",
+    "text": "Metformin is a first-line medication for the treatment of type 2 diabetes, particularly in patients who are overweight. It works by decreasing glucose production in the liver and increasing insulin sensitivity. Common side effects include gastrointestinal issues such as nausea and diarrhea. Metformin does not typically cause hypoglycemia when used alone.",
+    "source": "synthetic"
+  },
+  {
+    "id": "med_002",
+    "domain": "medical",
+    "title": "Hypertension Treatment Guidelines",
+    "text": "Current guidelines recommend lifestyle modifications as the first step in managing hypertension. For patients with blood pressure above 140/90 mmHg, pharmacological treatment is generally initiated. First-line antihypertensive drugs include ACE inhibitors, ARBs, calcium channel blockers, and thiazide diuretics. The choice depends on patient comorbidities and tolerability.",
+    "source": "synthetic"
+  },
+  {
+    "id": "med_003",
+    "domain": "medical",
+    "title": "Warfarin and Drug Interactions",
+    "text": "Warfarin is an anticoagulant with a narrow therapeutic index. Its effect is monitored using the INR (International Normalized Ratio). Numerous drug interactions can potentiate or inhibit warfarin's effect. For example, antibiotics such as ciprofloxacin can increase INR, while rifampin can decrease it. Dietary vitamin K intake also affects warfarin efficacy.",
+    "source": "synthetic"
+  },
+  {
+    "id": "med_004",
+    "domain": "medical",
+    "title": "Aspirin for Cardiovascular Prevention",
+    "text": "Low-dose aspirin (75-100 mg daily) is used for secondary prevention of cardiovascular events in patients with established coronary artery disease or history of ischemic stroke. Its use in primary prevention is more controversial, as the bleeding risk may outweigh the benefit in low-risk individuals. Current guidelines recommend against routine aspirin use for primary prevention in adults over 60.",
+    "source": "synthetic"
+  },
+  {
+    "id": "legal_001",
+    "domain": "legal",
+    "title": "Informed Consent in Medical Practice",
+    "text": "Informed consent requires that a healthcare provider disclose the nature of the proposed treatment, its risks and benefits, alternatives, and the consequences of refusing treatment. The standard for disclosure varies by jurisdiction: some use a physician-based standard (what a reasonable physician would disclose), while others use a patient-based standard (what a reasonable patient would want to know).",
+    "source": "synthetic"
+  },
+  {
+    "id": "legal_002",
+    "domain": "legal",
+    "title": "Medical Malpractice Elements",
+    "text": "To establish medical malpractice, a plaintiff must prove four elements: duty (the physician owed a duty of care), breach (the physician's care fell below the accepted standard), causation (the breach caused the injury), and damages (the patient suffered actual harm). Expert testimony is typically required to establish the standard of care and whether it was breached.",
+    "source": "synthetic"
+  },
+  {
+    "id": "legal_003",
+    "domain": "legal",
+    "title": "HIPAA Privacy Rule",
+    "text": "The HIPAA Privacy Rule establishes national standards for the protection of individually identifiable health information. Covered entities include health plans, healthcare clearinghouses, and healthcare providers who transmit health information electronically. The rule permits use and disclosure of protected health information without patient authorization for treatment, payment, and healthcare operations.",
+    "source": "synthetic"
+  },
+  {
+    "id": "legal_004",
+    "domain": "legal",
+    "title": "FDA Drug Approval Process",
+    "text": "The FDA drug approval process involves preclinical testing, an Investigational New Drug application, three phases of clinical trials, a New Drug Application review, and post-market surveillance. Phase I trials test safety in a small group. Phase II tests efficacy and side effects. Phase III involves large-scale testing to confirm effectiveness and monitor adverse reactions. The entire process typically takes 10-15 years.",
+    "source": "synthetic"
+  }
+]
