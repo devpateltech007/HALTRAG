@@ -161,4 +161,7 @@ This runs a few hand-crafted examples through simple heuristic rules and prints 
 6. HotpotQA: Yang, Z., et al. "HotpotQA: A Dataset for Diverse, Explainable Multi-hop Question Answering." EMNLP 2018.
 7. TriviaQA: Joshi, M., et al. "TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension." ACL 2017.
 8. QASPER: Dasigi, P., et al. "A Dataset of Information-Seeking Questions and Answers Anchored in Research Papers." NAACL 2021.
+<<<<<<< HEAD
 
+=======
+>>>>>>> ec4ab144e81e83435f581ccbf0f13400c07ecc77

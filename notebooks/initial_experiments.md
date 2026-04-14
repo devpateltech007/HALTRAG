@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 # Initial Experiments Report
 
 *Dev Patel & Kenil Vaghasiya April 2026*
+=======
+# Initial Experiments — Lab Notes
+
+*Dev Patel & Kenil Vaghasiya — April 2026*
+>>>>>>> ec4ab144e81e83435f581ccbf0f13400c07ecc77
 
 ---
 
@@ -11,7 +17,11 @@
 **Goal:** Verify that a simple lexical retriever can rank documents sensibly on our sample data. This is a sanity check before moving to BM25 or dense retrieval.
 
 **Setup:**
+<<<<<<< HEAD
 - Loaded the 8 document sample corpus (4 medical, 4 legal).
+=======
+- Loaded the 8-document sample corpus (4 medical, 4 legal).
+>>>>>>> ec4ab144e81e83435f581ccbf0f13400c07ecc77
 - Implemented token overlap scoring: for each query, tokenize both the query and each document, then compute the fraction of unique query tokens that appear in the document.
 - Removed stopwords to reduce noise.
 
@@ -23,6 +33,7 @@
 **Observations:**
 - The retriever correctly ranked the most relevant document first for all three queries.
 - Query 1 returned `med_001` (Metformin) at the top. Query 2 returned `legal_002` (Malpractice). Query 3 returned `med_003` (Warfarin).
+<<<<<<< HEAD
 - Scores were low overall (0.3 – 0.5 range) because the query tokens are short and many content words don't exactly match.
 - The ranking for lower-ranked results was less meaningful most documents scored close to 0.
 
@@ -32,6 +43,17 @@
 - This clearly won't work on a real dataset. We need BM25 at minimum.
 
 **Next:** Integrate `rank_bm25` library and re run on the same queries to compare.
+=======
+- Scores were low overall (0.3–0.5 range) because the query tokens are short and many content words don't exactly match.
+- The ranking for lower-ranked results was less meaningful — most documents scored close to 0.
+
+**Issues:**
+- Token overlap doesn't handle synonyms. "medication" in the document vs. "drug" in the query = no match.
+- No term weighting — rare terms and common terms contribute equally.
+- This clearly won't work on a real dataset. We need BM25 at minimum.
+
+**Next:** Integrate `rank_bm25` library and re-run on the same queries to compare.
+>>>>>>> ec4ab144e81e83435f581ccbf0f13400c07ecc77
 
 ---
 
@@ -39,13 +61,21 @@
 
 **Date:** April 10, 2026
 
+<<<<<<< HEAD
 **Goal:** Test whether simple rules can distinguish between hallucination categories on hand crafted examples. The point is to explore what signals are available, not to build a real detector.
+=======
+**Goal:** Test whether simple rules can distinguish between hallucination categories on hand-crafted examples. The point is to explore what signals are available, not to build a real detector.
+>>>>>>> ec4ab144e81e83435f581ccbf0f13400c07ecc77
 
 **Setup:**
 - Wrote 5 examples: one grounded answer and one for each hallucination type (factual, contextual, reasoning, faithfulness).
 - Heuristics:
   - **Factual:** Detect entities in the answer that don't appear in the context (naive capitalized-word extraction).
+<<<<<<< HEAD
   - **Contextual:** Low token coverage most answer tokens aren't in the context.
+=======
+  - **Contextual:** Low token coverage — most answer tokens aren't in the context.
+>>>>>>> ec4ab144e81e83435f581ccbf0f13400c07ecc77
   - **Reasoning:** Negation mismatch between context and answer.
   - **Faithfulness:** High density of absolutist/exaggeration words.
 
@@ -59,7 +89,11 @@
 **Issues:**
 - Entity extraction is very crude. It misses entities that aren't capitalized and produces false positives on common capitalized words.
 - Token coverage is a blunt instrument. A long answer with many novel *but correct* elaborations would be flagged as contextual hallucination.
+<<<<<<< HEAD
 - Negation detection is fragile. "Metformin is not dangerous" vs. "Metformin is safe" no negation word in the second one, so the heuristic misses the equivalence.
+=======
+- Negation detection is fragile. "Metformin is not dangerous" vs. "Metformin is safe" — no negation word in the second one, so the heuristic misses the equivalence.
+>>>>>>> ec4ab144e81e83435f581ccbf0f13400c07ecc77
 - The boundaries between categories are blurry. Some examples could be labeled as multiple types.
 - These heuristics would fall apart on real data. We need NLI for contextual/faithfulness and probably entity linking for factual.
 
