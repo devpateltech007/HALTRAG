@@ -1,5 +1,11 @@
 # HALT-RAG: Hallucination Analysis and Localization with Typing for RAG
 
+## Current Demo Focus
+
+This project now runs as a guarded RAG demo for a custom 50-question dataset. Users can upload new knowledge, the backend chunks it, appends it to the local corpus, retrieves over the updated corpus, generates an answer, and blocks unsafe generated text before the final answer is shown.
+
+The generator is treated as untrusted. If the generated answer is hallucinated, weakly grounded, or introduces unsupported facts, the guardrail replaces it with an extractive evidence span or abstains with `Not enough evidence in context.`
+
 ## Overview
 
 HALT-RAG is a Retrieval-Augmented Generation (RAG) system designed for **high-stakes question answering** in domains like medicine and law, where hallucinated answers can have serious consequences. The project focuses on building a pipeline that retrieves relevant evidence, generates grounded answers, and classifies hallucinations into fine-grained categories—factual, contextual, reasoning, and faithfulness errors.
@@ -86,6 +92,14 @@ HALT-RAG/
 ├── README.md                              # This file
 ├── requirements.txt                       # Minimal Python dependencies
 ├── .gitignore                             # Standard ignores
+├── src/
+│   ├── pipeline.py                         # Retrieve → generate → analyze CLI
+│   ├── retriever.py                        # BM25 retriever (`rank_bm25`)
+│   ├── generator.py                       # FLAN-T5-small + extractive fallback
+│   └── analyzer.py                        # DeBERTa MNLI + heuristics
+├── scripts/
+│   ├── prepare_pubmedqa.py               # Snapshot PubMedQA → JSON corpus
+│   └── evaluate.py                        # Retrieval + toy heuristic checks
 ├── data/
 │   ├── README.md                          # Data documentation
 │   └── sample_corpus.json                 # Tiny sample corpus for testing
@@ -161,7 +175,27 @@ This runs a few hand-crafted examples through simple heuristic rules and prints 
 6. HotpotQA: Yang, Z., et al. "HotpotQA: A Dataset for Diverse, Explainable Multi-hop Question Answering." EMNLP 2018.
 7. TriviaQA: Joshi, M., et al. "TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension." ACL 2017.
 8. QASPER: Dasigi, P., et al. "A Dataset of Information-Seeking Questions and Answers Anchored in Research Papers." NAACL 2021.
-<<<<<<< HEAD
 
-=======
->>>>>>> ec4ab144e81e83435f581ccbf0f13400c07ecc77
+## End-to-end pipeline (`src`)
+
+From the repo root (after installing `requirements.txt`):
+
+```bash
+# Fast demo: BM25 + extractive snippet + heuristic typing (no model downloads beyond rank_bm25)
+python -m src.pipeline --query "What is metformin used for?" --no-llm --skip-nli
+
+# Full stack: BM25 → FLAN-T5-small → DeBERTa MNLI (downloads model weights on first run)
+python -m scripts.evaluate
+python scripts/prepare_pubmedqa.py --out data/pubmedqa_labeled_slice.json --max-examples 500
+python -m src.pipeline --query "Does aspirin reduce cardiovascular risk?" --corpus data/pubmedqa_labeled_slice.json
+```
+
+### Guarded custom demo
+
+```bash
+python scripts/evaluate.py --questions data/custom_50_questions.json
+python -m src.pipeline --query "What is metformin used for?" --no-llm --skip-nli
+python scripts/add_knowledge.py --file notes.txt --title "Uploaded Notes" --domain custom --json
+```
+
+The default pipeline is guarded. Use `--no-guard` only when you want to inspect raw generator behavior.

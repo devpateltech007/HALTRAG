@@ -1,0 +1,402 @@
+[
+  {
+    "id": "q001",
+    "question": "What is metformin primarily used to treat?",
+    "expected_answer": "Metformin is used as a first line medication for type 2 diabetes.",
+    "expected_doc_ids": ["med_001"],
+    "domain": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q002",
+    "question": "How does metformin help lower blood glucose?",
+    "expected_answer": "It decreases liver glucose production and increases insulin sensitivity.",
+    "expected_doc_ids": ["med_001"],
+    "domain": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q003",
+    "question": "Does metformin usually cause hypoglycemia when taken alone?",
+    "expected_answer": "Metformin does not typically cause hypoglycemia when used alone.",
+    "expected_doc_ids": ["med_001"],
+    "domain": "medical",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q004",
+    "question": "What common side effects are associated with metformin?",
+    "expected_answer": "Common side effects include gastrointestinal issues such as nausea and diarrhea.",
+    "expected_doc_ids": ["med_001"],
+    "domain": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q005",
+    "question": "Which patients are especially mentioned as candidates for metformin?",
+    "expected_answer": "Patients with type 2 diabetes who are overweight are especially mentioned.",
+    "expected_doc_ids": ["med_001"],
+    "domain": "medical",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q006",
+    "question": "What liver process does metformin reduce?",
+    "expected_answer": "Metformin reduces glucose production in the liver.",
+    "expected_doc_ids": ["med_001"],
+    "domain": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q007",
+    "question": "Should a guarded answer claim metformin cures diabetes?",
+    "expected_answer": "No. The evidence only says metformin treats type 2 diabetes and improves glucose control.",
+    "expected_doc_ids": ["med_001"],
+    "domain": "medical",
+    "difficulty": "hard"
+  },
+  {
+    "id": "q008",
+    "question": "What is the first step recommended for managing hypertension?",
+    "expected_answer": "Current guidelines recommend lifestyle modifications first.",
+    "expected_doc_ids": ["med_002"],
+    "domain": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q009",
+    "question": "At what blood pressure level is pharmacological treatment generally started?",
+    "expected_answer": "Pharmacological treatment is generally initiated above 140 over 90 mmHg.",
+    "expected_doc_ids": ["med_002"],
+    "domain": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q010",
+    "question": "Name two first line antihypertensive drug classes from the evidence.",
+    "expected_answer": "Examples include ACE inhibitors and ARBs.",
+    "expected_doc_ids": ["med_002"],
+    "domain": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q011",
+    "question": "Which factors influence the choice of antihypertensive medication?",
+    "expected_answer": "The choice depends on patient comorbidities and tolerability.",
+    "expected_doc_ids": ["med_002"],
+    "domain": "medical",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q012",
+    "question": "Are calcium channel blockers listed as first line antihypertensive drugs?",
+    "expected_answer": "Yes. Calcium channel blockers are listed among first line antihypertensive drugs.",
+    "expected_doc_ids": ["med_002"],
+    "domain": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q013",
+    "question": "Does the evidence say every hypertension patient immediately needs medication?",
+    "expected_answer": "No. It says lifestyle modification is first and medication is generally initiated above 140 over 90 mmHg.",
+    "expected_doc_ids": ["med_002"],
+    "domain": "medical",
+    "difficulty": "hard"
+  },
+  {
+    "id": "q014",
+    "question": "What class of diuretics is listed for first line hypertension treatment?",
+    "expected_answer": "Thiazide diuretics are listed.",
+    "expected_doc_ids": ["med_002"],
+    "domain": "medical",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q015",
+    "question": "What is warfarin used as?",
+    "expected_answer": "Warfarin is an anticoagulant.",
+    "expected_doc_ids": ["med_003"],
+    "domain": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q016",
+    "question": "Why does warfarin require monitoring?",
+    "expected_answer": "Warfarin has a narrow therapeutic index and its effect is monitored using INR.",
+    "expected_doc_ids": ["med_003"],
+    "domain": "medical",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q017",
+    "question": "What does INR stand for?",
+    "expected_answer": "INR stands for International Normalized Ratio.",
+    "expected_doc_ids": ["med_003"],
+    "domain": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q018",
+    "question": "How can ciprofloxacin affect warfarin therapy?",
+    "expected_answer": "Ciprofloxacin can increase INR.",
+    "expected_doc_ids": ["med_003"],
+    "domain": "medical",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q019",
+    "question": "How can rifampin affect warfarin therapy?",
+    "expected_answer": "Rifampin can decrease INR.",
+    "expected_doc_ids": ["med_003"],
+    "domain": "medical",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q020",
+    "question": "What dietary factor affects warfarin efficacy?",
+    "expected_answer": "Dietary vitamin K intake affects warfarin efficacy.",
+    "expected_doc_ids": ["med_003"],
+    "domain": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q021",
+    "question": "Should the system say antibiotics have no impact on warfarin?",
+    "expected_answer": "No. The evidence says some antibiotics such as ciprofloxacin can increase INR.",
+    "expected_doc_ids": ["med_003"],
+    "domain": "medical",
+    "difficulty": "hard"
+  },
+  {
+    "id": "q022",
+    "question": "What dose range of aspirin is mentioned for secondary prevention?",
+    "expected_answer": "Low dose aspirin of 75 to 100 mg daily is mentioned.",
+    "expected_doc_ids": ["med_004"],
+    "domain": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q023",
+    "question": "For whom is low dose aspirin used for secondary prevention?",
+    "expected_answer": "It is used for patients with established coronary artery disease or a history of ischemic stroke.",
+    "expected_doc_ids": ["med_004"],
+    "domain": "medical",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q024",
+    "question": "Why is aspirin primary prevention controversial?",
+    "expected_answer": "Bleeding risk may outweigh benefit in low risk individuals.",
+    "expected_doc_ids": ["med_004"],
+    "domain": "medical",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q025",
+    "question": "What do current guidelines recommend about routine aspirin primary prevention in adults over 60?",
+    "expected_answer": "Current guidelines recommend against routine aspirin use for primary prevention in adults over 60.",
+    "expected_doc_ids": ["med_004"],
+    "domain": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q026",
+    "question": "Does the evidence support aspirin for every adult to prevent heart disease?",
+    "expected_answer": "No. Primary prevention is controversial and routine use over 60 is recommended against.",
+    "expected_doc_ids": ["med_004"],
+    "domain": "medical",
+    "difficulty": "hard"
+  },
+  {
+    "id": "q027",
+    "question": "What cardiovascular history makes aspirin secondary prevention relevant?",
+    "expected_answer": "Established coronary artery disease or history of ischemic stroke.",
+    "expected_doc_ids": ["med_004"],
+    "domain": "medical",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q028",
+    "question": "What major risk is mentioned for aspirin use?",
+    "expected_answer": "Bleeding risk is mentioned.",
+    "expected_doc_ids": ["med_004"],
+    "domain": "medical",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q029",
+    "question": "What must a provider disclose for informed consent?",
+    "expected_answer": "The provider must disclose the treatment nature, risks and benefits, alternatives, and consequences of refusing treatment.",
+    "expected_doc_ids": ["legal_001"],
+    "domain": "legal",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q030",
+    "question": "Does informed consent include alternatives to treatment?",
+    "expected_answer": "Yes. Alternatives are part of the required disclosure.",
+    "expected_doc_ids": ["legal_001"],
+    "domain": "legal",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q031",
+    "question": "What is the physician based disclosure standard?",
+    "expected_answer": "It asks what a reasonable physician would disclose.",
+    "expected_doc_ids": ["legal_001"],
+    "domain": "legal",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q032",
+    "question": "What is the patient based disclosure standard?",
+    "expected_answer": "It asks what a reasonable patient would want to know.",
+    "expected_doc_ids": ["legal_001"],
+    "domain": "legal",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q033",
+    "question": "Does the disclosure standard vary by jurisdiction?",
+    "expected_answer": "Yes. The standard varies by jurisdiction.",
+    "expected_doc_ids": ["legal_001"],
+    "domain": "legal",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q034",
+    "question": "Should the system claim every jurisdiction uses the same informed consent standard?",
+    "expected_answer": "No. The evidence says the standard varies by jurisdiction.",
+    "expected_doc_ids": ["legal_001"],
+    "domain": "legal",
+    "difficulty": "hard"
+  },
+  {
+    "id": "q035",
+    "question": "What are the four elements of medical malpractice?",
+    "expected_answer": "Duty, breach, causation, and damages.",
+    "expected_doc_ids": ["legal_002"],
+    "domain": "legal",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q036",
+    "question": "What does duty mean in medical malpractice?",
+    "expected_answer": "Duty means the physician owed a duty of care.",
+    "expected_doc_ids": ["legal_002"],
+    "domain": "legal",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q037",
+    "question": "What does breach mean in medical malpractice?",
+    "expected_answer": "Breach means the physician care fell below the accepted standard.",
+    "expected_doc_ids": ["legal_002"],
+    "domain": "legal",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q038",
+    "question": "What must causation show in medical malpractice?",
+    "expected_answer": "Causation must show that the breach caused the injury.",
+    "expected_doc_ids": ["legal_002"],
+    "domain": "legal",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q039",
+    "question": "What does damages require in a medical malpractice claim?",
+    "expected_answer": "Damages require that the patient suffered actual harm.",
+    "expected_doc_ids": ["legal_002"],
+    "domain": "legal",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q040",
+    "question": "What type of testimony is typically required in malpractice cases?",
+    "expected_answer": "Expert testimony is typically required to establish standard of care and breach.",
+    "expected_doc_ids": ["legal_002"],
+    "domain": "legal",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q041",
+    "question": "What does the HIPAA Privacy Rule protect?",
+    "expected_answer": "It protects individually identifiable health information.",
+    "expected_doc_ids": ["legal_003"],
+    "domain": "legal",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q042",
+    "question": "Name one covered entity under the HIPAA Privacy Rule.",
+    "expected_answer": "Covered entities include health plans, healthcare clearinghouses, and certain healthcare providers.",
+    "expected_doc_ids": ["legal_003"],
+    "domain": "legal",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q043",
+    "question": "When can protected health information be used without patient authorization?",
+    "expected_answer": "It can be used for treatment, payment, and healthcare operations.",
+    "expected_doc_ids": ["legal_003"],
+    "domain": "legal",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q044",
+    "question": "Do healthcare providers who transmit health information electronically count as covered entities?",
+    "expected_answer": "Yes. Such healthcare providers are covered entities.",
+    "expected_doc_ids": ["legal_003"],
+    "domain": "legal",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q045",
+    "question": "Should the system claim HIPAA always requires authorization for treatment disclosures?",
+    "expected_answer": "No. The rule permits disclosure without authorization for treatment, payment, and healthcare operations.",
+    "expected_doc_ids": ["legal_003"],
+    "domain": "legal",
+    "difficulty": "hard"
+  },
+  {
+    "id": "q046",
+    "question": "What are the major steps in the FDA drug approval process?",
+    "expected_answer": "The process includes preclinical testing, an IND application, three clinical trial phases, NDA review, and post market surveillance.",
+    "expected_doc_ids": ["legal_004"],
+    "domain": "legal",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q047",
+    "question": "What is tested in Phase I trials?",
+    "expected_answer": "Phase I trials test safety in a small group.",
+    "expected_doc_ids": ["legal_004"],
+    "domain": "legal",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q048",
+    "question": "What is tested in Phase II trials?",
+    "expected_answer": "Phase II tests efficacy and side effects.",
+    "expected_doc_ids": ["legal_004"],
+    "domain": "legal",
+    "difficulty": "easy"
+  },
+  {
+    "id": "q049",
+    "question": "What happens in Phase III trials?",
+    "expected_answer": "Phase III involves large scale testing to confirm effectiveness and monitor adverse reactions.",
+    "expected_doc_ids": ["legal_004"],
+    "domain": "legal",
+    "difficulty": "medium"
+  },
+  {
+    "id": "q050",
+    "question": "How long does the FDA drug approval process typically take?",
+    "expected_answer": "The process typically takes 10 to 15 years.",
+    "expected_doc_ids": ["legal_004"],
+    "domain": "legal",
+    "difficulty": "easy"
+  }
+]

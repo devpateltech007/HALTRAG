@@ -1,23 +1,24 @@
 # Data Directory
 
-## Why Full Datasets Are Not Included
-
-The datasets we're evaluating (PubMedQA, TriviaQA, HotpotQA, QASPER) are large and hosted by their respective maintainers. Including them in the repository would be impractical and violate best practices for version control.
-
-- **PubMedQA**: ~200MB+ (artificially generated split)
-- **TriviaQA**: ~2.5GB (with evidence documents)
-- **HotpotQA**: ~600MB (fullwiki setting)
-- **QASPER**: ~300MB (full papers)
-
 ## What Is Included
 
-- **`sample_corpus.json`** — A small, hand-crafted corpus of 8 entries with medical and legal content. This is used for local development and testing of the retrieval and hallucination analysis prototypes.
+- `sample_corpus.json` is the local retrieval corpus used by the app.
+- `custom_50_questions.json` is our custom 50-question evaluation set.
 
-## How Datasets Will Be Used Later
+Each custom question includes the question, expected answer, expected supporting document ids, domain, and difficulty.
 
-Once we move past the prototyping phase:
+## Runtime Knowledge Uploads
 
-1. We'll add download and preprocessing scripts under a `scripts/` directory.
-2. Raw data will be stored locally in `data/raw/` (gitignored).
-3. Processed data will go in `data/processed/` (also gitignored).
-4. Only small sample files and metadata will be committed to the repo.
+The app can append new knowledge to `sample_corpus.json`. Uploaded text is chunked first, then each chunk is stored as a retrievable document with `source=user_upload` or `source=frontend_upload`.
+
+Use the CLI directly.
+
+```bash
+python scripts/add_knowledge.py --file notes.txt --title "Lecture Notes" --domain custom --json
+```
+
+The model is not retrained. Only the retrieval corpus is updated.
+
+## External Datasets
+
+Large public datasets are not committed to this repo. PubMedQA, TriviaQA, HotpotQA, and QASPER can still be used for later experiments through preprocessing scripts, but the current project demo is centered on the custom 50-question set and dynamic knowledge uploads.
