@@ -1,5 +1,6 @@
 from __future__ import annotations
 import logging
+import os
 from typing import Any, Literal
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,6 +20,12 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+DEFAULT_CORS_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://haltrag-cvaqpwp88-devpateltech007s-projects.vercel.app",
+]
 
 Risk = Literal["low", "medium", "high"]
 HallucinationType = Literal["faithful", "factual", "contextual", "reasoning"]
@@ -97,6 +104,8 @@ class KnowledgeUpdateResponse(BaseModel):
     verified: bool
     source_type: Literal["document", "qa_pair"]
     vector_store: dict[str, Any]
+
+
 class HaltRAGService:
     def __init__(self):
         self.audit_logger = AuditLogger()
@@ -220,7 +229,7 @@ def create_app(service: Any | None = None) -> FastAPI:
     app = FastAPI(title="HALT-RAG API", version="1.0.0")
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "*"],
+        allow_origins=_cors_origins(),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -296,6 +305,12 @@ def create_app(service: Any | None = None) -> FastAPI:
         )
 
     return app
+
+
+def _cors_origins() -> list[str]:
+    configured = os.getenv("FRONTEND_ORIGINS", "")
+    origins = [origin.strip() for origin in configured.split(",") if origin.strip()]
+    return list(dict.fromkeys(DEFAULT_CORS_ORIGINS + origins))
 
 
 def _normalize_response(raw: dict[str, Any]) -> dict[str, Any]:
