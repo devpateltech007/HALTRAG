@@ -25,7 +25,9 @@ DEFAULT_CORS_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://haltrag-cvaqpwp88-devpateltech007s-projects.vercel.app",
+    "https://haltrag-nx59k2pwd-devpateltech007s-projects.vercel.app",
 ]
+DEFAULT_CORS_ORIGIN_REGEX = r"https://haltrag-[a-z0-9-]+-devpateltech007s-projects\.vercel\.app"
 
 Risk = Literal["low", "medium", "high"]
 HallucinationType = Literal["faithful", "factual", "contextual", "reasoning"]
@@ -230,6 +232,7 @@ def create_app(service: Any | None = None) -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=_cors_origins(),
+        allow_origin_regex=os.getenv("FRONTEND_ORIGIN_REGEX", DEFAULT_CORS_ORIGIN_REGEX),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

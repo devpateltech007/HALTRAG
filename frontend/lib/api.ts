@@ -1,6 +1,7 @@
-export const API_BASE =
+export const API_BASE = (
   (typeof process !== "undefined" && process.env.NEXT_PUBLIC_API_BASE) ||
-  "http://127.0.0.1:8000";
+  "http://127.0.0.1:8000"
+).replace(/\/+$/, "");
 
 export type Risk = "low" | "medium" | "high";
 export type HallucinationType = "faithful" | "factual" | "contextual" | "reasoning";
