@@ -1,0 +1,13 @@
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+logs/
+results/
+data/corpus/*.npy
+data/corpus/*.faiss
+data/corpus/metadata.jsonl
+data/corpus/dynamic_knowledge.jsonl
