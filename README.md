@@ -1,201 +1,318 @@
-# HALT-RAG: Hallucination Analysis and Localization with Typing for RAG
+# HALT-RAG · Trust-Aware Retrieval-Augmented Generation
 
-## Current Demo Focus
+> Detect, classify, and localize hallucinations in high-stakes AI answers.
 
-This project now runs as a guarded RAG demo for a custom 50-question dataset. Users can upload new knowledge, the backend chunks it, appends it to the local corpus, retrieves over the updated corpus, generates an answer, and blocks unsafe generated text before the final answer is shown.
+HALT-RAG is a **graduate-research-grade** retrieval-augmented generation
+system designed for high-stakes domains (medical / legal QA). It separates
+**generation** from **verification** and treats the hallucination detector
+as a **probabilistic trust signal** rather than an oracle. Every answer is
+graded, every sentence is localized, every signal is exposed, every query
+is audit-logged.
 
-The generator is treated as untrusted. If the generated answer is hallucinated, weakly grounded, or introduces unsupported facts, the guardrail replaces it with an extractive evidence span or abstains with `Not enough evidence in context.`
+This `HALT-RAG-FINAL/` directory is the **clean final runnable system**.
+The repository root above it preserves legacy experiments, notebooks,
+prototypes, proposal PDFs, and prior coursework.
 
-## Overview
+---
 
-HALT-RAG is a Retrieval-Augmented Generation (RAG) system designed for **high-stakes question answering** in domains like medicine and law, where hallucinated answers can have serious consequences. The project focuses on building a pipeline that retrieves relevant evidence, generates grounded answers, and classifies hallucinations into fine-grained categories—factual, contextual, reasoning, and faithfulness errors.
+## 1. Project overview
 
-This repository represents the **start of implementation**. We are currently in the early experimentation and architecture design phase.
+| Layer            | Component                                     | File                                  |
+| ---------------- | --------------------------------------------- | ------------------------------------- |
+| API              | FastAPI app                                    | `backend/main.py`                     |
+| Retrieval        | MiniLM embeddings + FAISS                      | `src/retrieval.py`                    |
+| Generation       | Gemini + extractive fallback                   | `src/generation.py`                   |
+| Sentence verifier| NLI + similarity + overlap + retrieval         | `src/deep_hallucination_detector.py`  |
+| Answer classifier| `faithful / factual / contextual / reasoning`  | `src/hallucination_classifier.py`     |
+| Detector validator| multi-signal confidence + agreement           | `src/detector_validation.py`          |
+| Confidence       | composite trust score                          | `src/confidence.py`                   |
+| Knowledge update | dynamic chunk + embed + reload                 | `src/knowledge_update.py`             |
+| Audit            | append-only JSONL                              | `src/audit.py`                        |
+| Frontend         | Next.js 14 + Tailwind dark dashboard           | `frontend/`                           |
 
-## Problem Statement
+---
 
-Large language models frequently hallucinate—they produce answers that sound confident but are factually wrong, unsupported by the retrieved context, or logically inconsistent. In general-purpose QA this is annoying; in **medical and legal QA** it can be dangerous.
-
-Existing hallucination detection methods often treat the problem as binary (hallucinated vs. not). We want to go further and **categorize** hallucinations so that downstream systems or human reviewers can understand *what kind* of error occurred and *where* it originated in the pipeline.
-
-## Why This Matters
-
-- A medical chatbot that fabricates drug interactions could harm patients.
-- A legal QA tool that invents case precedents could mislead attorneys and judges.
-- Fine-grained hallucination typing helps build trust and enables targeted fixes.
-
-## Team
-
-| Name | SJSU ID | GitHub |
-|------|---------|--------|
-| Dev Patel | — | @dev-patel |
-| Kenil Vaghasiya | — | @kenil-vaghasiya |
-
-## Project Goals
-
-1. Build a modular RAG pipeline (retriever → generator → hallucination analyzer).
-2. Implement a hallucination **typing** system that classifies errors into categories:
-   - **Factual** — generated claim contradicts world knowledge.
-   - **Contextual** — answer is not grounded in the retrieved passages.
-   - **Reasoning** — logical steps in the answer are invalid.
-   - **Faithfulness** — answer distorts or misrepresents the source text.
-3. Evaluate on medical and legal QA benchmarks.
-4. Provide interpretable explanations of detected hallucinations.
-
-## Datasets Under Exploration
-
-| Dataset | Domain | Why we're looking at it |
-|---------|--------|------------------------|
-| **PubMedQA** | Biomedical | Real medical research questions with yes/no/maybe answers and supporting context. |
-| **TriviaQA** | Open-domain | Large-scale QA with evidence documents; good for retrieval baselines. |
-| **HotpotQA** | Multi-hop | Requires reasoning over multiple documents; useful for reasoning-type hallucinations. |
-| **QASPER** | Scientific papers | Question answering over NLP papers; tests long-document retrieval. |
-
-We have not committed to a final dataset yet. See [`docs/dataset_notes.md`](docs/dataset_notes.md) for detailed notes.
-
-## Planned Approach
+## 2. System architecture
 
 ```
-Query → Retriever (BM25 / dense) → Top-k Passages → Generator (LLM) → Answer
-                                                                         │
-                                                         Hallucination Analyzer
-                                                                         │
-                                                         Type label + Explanation
+Question
+  → Dense retriever (MiniLM + FAISS)
+  → Generator (Gemini / extractive fallback)
+  → Sentence-level grounding (NLI · similarity · overlap · retrieval)
+  → Hallucination classifier (faithful / factual / contextual / reasoning)
+  → Detector validation (multi-signal agreement)
+  → Confidence + risk
+  → API/UI + JSONL audit log
 ```
 
-1. **Retrieval**: Start with BM25 (lexical), then move to dense retrieval (e.g., Contriever, ColBERT).
-2. **Generation**: Use an open-source LLM (e.g., Llama-3, Mistral) to produce answers conditioned on retrieved passages.
-3. **Hallucination Detection & Typing**: Combine NLI-based entailment checking, entity overlap heuristics, and possibly a fine-tuned classifier to label hallucination categories.
-4. **Evaluation**: Measure retrieval recall, answer quality (F1 / ROUGE), and hallucination detection accuracy.
+Full diagram in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-More detail is in [`docs/architecture.md`](docs/architecture.md).
+---
 
-## What Has Been Done So Far
+## 3. Deep-learning components
 
-- [x] Formed team and brainstormed project ideas
-- [x] Surveyed related work on RAG hallucinations
-- [x] Decided on hallucination taxonomy (factual / contextual / reasoning / faithfulness)
-- [x] Explored and compared candidate datasets
-- [x] Designed high-level architecture
-- [x] Created a sample corpus for local testing
-- [x] Implemented a simple BM25-style baseline retriever
-- [x] Wrote an exploratory hallucination labeling sketch using heuristics
+- **`sentence-transformers/all-MiniLM-L6-v2`** for retrieval and semantic
+  similarity (with deterministic local fallback).
+- **Hugging Face NLI model** (cross-encoder) for entailment / contradiction.
+- **FAISS** for dense nearest-neighbour search.
+- **Gemini** for answer generation when `GEMINI_API_KEY` is configured.
 
-## Current Status
+All components have local fallbacks so the demo is reproducible without
+external API keys.
 
-We are in the **early implementation** stage. The retriever baseline works on sample data with token overlap scoring. The hallucination labeling sketch is a heuristic prototype—no ML models are trained yet. We have not integrated a generator LLM into the pipeline.
+---
 
-## Repository Structure
+## 4. Dataset strategy
 
-```
-HALT-RAG/
-├── README.md                              # This file
-├── requirements.txt                       # Minimal Python dependencies
-├── .gitignore                             # Standard ignores
-├── src/
-│   ├── pipeline.py                         # Retrieve → generate → analyze CLI
-│   ├── retriever.py                        # BM25 retriever (`rank_bm25`)
-│   ├── generator.py                       # FLAN-T5-small + extractive fallback
-│   └── analyzer.py                        # DeBERTa MNLI + heuristics
-├── scripts/
-│   ├── prepare_pubmedqa.py               # Snapshot PubMedQA → JSON corpus
-│   └── evaluate.py                        # Retrieval + toy heuristic checks
-├── data/
-│   ├── README.md                          # Data documentation
-│   └── sample_corpus.json                 # Tiny sample corpus for testing
-├── experiments/
-│   ├── baseline_retrieval.py              # Simple lexical retrieval baseline
-│   └── hallucination_label_sketch.py      # Heuristic hallucination labeling prototype
-├── notebooks/
-│   └── initial_experiments.md             # Lab notes from early experiments
-└── docs/
-    ├── architecture.md                    # System design / pipeline plan
-    ├── dataset_notes.md                   # Dataset research notes
-    ├── progress_log.md                    # Dated progress log
-    └── team_work_split.md                 # Contribution tracking
-```
+- Curated demo corpus under `data/corpus/` (FAISS + JSONL metadata).
+- Curated **evaluation set** at `data/eval/halt_rag_eval.csv` — 40 cases
+  covering all four hallucination types in medical / legal QA.
+- Dynamic admin updates are appended to `data/dynamic_knowledge.jsonl` and
+  reloaded into the retriever.
 
-## How to Run
+---
 
-### Setup
+## 5. Dynamic knowledge updates
+
+The admin page (`/admin` in the UI) allows verified documents and Q&A
+pairs to be added at runtime:
+
+1. Text is chunked.
+2. Chunks are embedded with the same MiniLM encoder.
+3. The new vectors are persisted to the vector store.
+4. The retriever is reloaded — **the LLM is never retrained**.
+
+This demonstrates how a RAG system can absorb new evidence without the
+cost or risk of fine-tuning.
+
+---
+
+## 6. Hallucination detection methodology
+
+For every answer sentence the detector computes:
+
+- **NLI entailment** vs. the best retrieved context.
+- **Semantic similarity** in embedding space.
+- **Lexical overlap** of content tokens.
+- **Retrieval strength** of the supporting context.
+
+These signals are combined into a sentence-level label:
+
+- 🟢 `grounded` · 🟠 `uncertain` · 🔴 `hallucinated`
+
+And aggregated into an answer-level type:
+
+- `faithful` · `factual` · `contextual` · `reasoning`
+
+---
+
+## 7. Why the detector is probabilistic
+
+We deliberately avoid claiming hallucination elimination. The detector is
+a **probabilistic trust signal**, not a verdict. Its independence and
+multi-signal design make it more robust than a single classifier, but it
+is still fallible — and so we expose its uncertainty rather than hide it.
+
+Full discussion in [`docs/PROFESSOR_QA.md`](docs/PROFESSOR_QA.md).
+
+---
+
+## 8. Evaluation metrics
+
+Detector evaluation:
 
 ```bash
-# Clone the repository
-git clone https://github.com/<your-org>/halt-rag.git
-cd halt-rag
+python -m src.evaluate_detector
+```
 
-# Create a virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate   # On Windows: venv\Scripts\activate
+Generates:
 
-# Install dependencies
+- `results/evaluation_report.json` — accuracy, macro F1, per-case detector signals.
+- `results/confusion_matrix.png`
+- `results/type_distribution.png`
+- `results/confidence_distribution.png`
+
+Full evaluation methodology in [`docs/EVALUATION.md`](docs/EVALUATION.md).
+
+---
+
+## 9. Ablation study
+
+```bash
+python -m src.ablation
+```
+
+Generates `results/ablation_results.csv` — detector accuracy with each
+signal removed one at a time. This is the empirical answer to "why four
+signals?" — every signal contributes; removing any of them measurably
+degrades performance.
+
+---
+
+## 10. Run instructions
+
+### 10.1 Install (Python backend)
+
+```bash
 pip install -r requirements.txt
 ```
 
-### Run the baseline retrieval experiment
+Optional environment variables (see `.env.example`):
 
-```bash
-python experiments/baseline_retrieval.py
+```
+GEMINI_API_KEY=
+GENERATION_PROVIDER=gemini
 ```
 
-This loads `data/sample_corpus.json`, takes a hard-coded test query, scores documents by token overlap, and prints the ranked results.
+If the key is missing, generation falls back to an extractive answer
+built from the top retrieved sentences.
 
-### Run the hallucination labeling sketch
-
-```bash
-python experiments/hallucination_label_sketch.py
-```
-
-This runs a few hand-crafted examples through simple heuristic rules and prints the predicted hallucination type for each.
-
-## Next Steps
-
-- [ ] Integrate a proper BM25 implementation (e.g., via `rank_bm25`)
-- [ ] Download and preprocess PubMedQA and/or HotpotQA
-- [ ] Add a generator component using an open-source LLM
-- [ ] Replace heuristic labeling with NLI-based entailment checking
-- [ ] Build an end-to-end pipeline prototype
-- [ ] Design evaluation metrics and run initial benchmarks
-- [ ] Experiment with dense retrieval models
-
-## Challenges and Limitations
-
-- **No gold hallucination labels**: Most QA datasets don't label *why* an answer is wrong, only *whether* it is. We may need to create or adapt annotations.
-- **Compute constraints**: Running large LLMs locally is expensive; we'll likely rely on smaller models or API access.
-- **Subjectivity in typing**: The boundary between "contextual" and "faithfulness" hallucinations can be blurry. We need clear annotation guidelines.
-- **Early stage**: The current code is exploratory. The heuristic labeler is not a real detector—it's a sketch to test our category definitions.
-
-## References
-
-1. Lewis, P., et al. "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks." NeurIPS 2020.
-2. Ji, Z., et al. "Survey of Hallucination in Natural Language Generation." ACM Computing Surveys, 2023.
-3. Manakul, P., et al. "SelfCheckGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models." EMNLP 2023.
-4. Min, S., et al. "FActScore: Fine-grained Atomic Evaluation of Factual Precision in Long Form Text Generation." EMNLP 2023.
-5. PubMedQA: Jin, Q., et al. "PubMedQA: A Dataset for Biomedical Research Question Answering." EMNLP 2019.
-6. HotpotQA: Yang, Z., et al. "HotpotQA: A Dataset for Diverse, Explainable Multi-hop Question Answering." EMNLP 2018.
-7. TriviaQA: Joshi, M., et al. "TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension." ACL 2017.
-8. QASPER: Dasigi, P., et al. "A Dataset of Information-Seeking Questions and Answers Anchored in Research Papers." NAACL 2021.
-
-## End-to-end pipeline (`src`)
-
-From the repo root (after installing `requirements.txt`):
+### 10.2 Run the backend
 
 ```bash
-# Fast demo: BM25 + extractive snippet + heuristic typing (no model downloads beyond rank_bm25)
-python -m src.pipeline --query "What is metformin used for?" --no-llm --skip-nli
-
-# Full stack: BM25 → FLAN-T5-small → DeBERTa MNLI (downloads model weights on first run)
-python -m scripts.evaluate
-python scripts/prepare_pubmedqa.py --out data/pubmedqa_labeled_slice.json --max-examples 500
-python -m src.pipeline --query "Does aspirin reduce cardiovascular risk?" --corpus data/pubmedqa_labeled_slice.json
+uvicorn backend.main:app --reload --port 8000
 ```
 
-### Guarded custom demo
+Endpoints: `/health`, `/query`, `/admin/add_document`, `/admin/add_qa`,
+`/logs`.
+
+### 10.3 Run the frontend
 
 ```bash
-python scripts/evaluate.py --questions data/custom_50_questions.json
-python -m src.pipeline --query "What is metformin used for?" --no-llm --skip-nli
-python scripts/add_knowledge.py --file notes.txt --title "Uploaded Notes" --domain custom --json
+cd frontend
+npm install
+npm run dev
 ```
 
-The default pipeline is guarded. Use `--no-guard` only when you want to inspect raw generator behavior.
+Open <http://127.0.0.1:3000> — the trust-aware dashboard.
+
+### 10.4 Run the tests
+
+```bash
+pytest
+```
+
+---
+
+## 11. Project structure
+
+```text
+HALT-RAG-FINAL/
+├── backend/                FastAPI app
+│   ├── __init__.py
+│   ├── api.py              compatibility wrapper
+│   └── main.py             create_app + endpoints
+├── src/
+│   ├── ablation.py
+│   ├── audit.py
+│   ├── confidence.py
+│   ├── config.py
+│   ├── deep_hallucination_detector.py
+│   ├── detector_validation.py
+│   ├── evaluate_detector.py
+│   ├── generation.py
+│   ├── hallucination_classifier.py
+│   ├── knowledge_update.py
+│   ├── retrieval.py
+│   ├── utils.py
+│   └── models/
+│       ├── embedding_model.py
+│       └── nli_model.py
+├── frontend/               Next.js 14 + Tailwind dark dashboard
+│   ├── app/
+│   │   ├── layout.tsx
+│   │   ├── globals.css
+│   │   ├── page.tsx               Dashboard
+│   │   ├── ask/page.tsx           Ask console
+│   │   ├── admin/page.tsx         Knowledge update
+│   │   ├── logs/page.tsx          Audit log table
+│   │   └── about/page.tsx         Methodology
+│   ├── components/                Reusable UI
+│   ├── lib/api.ts                 typed API client
+│   ├── tailwind.config.ts
+│   ├── postcss.config.js
+│   ├── tsconfig.json
+│   └── package.json
+├── data/
+│   ├── corpus/             FAISS index + metadata
+│   ├── eval/               curated evaluation set
+│   └── sample_corpus.json  fallback corpus
+├── docs/                   architecture · evaluation · QA · limitations
+├── logs/                   audit.jsonl
+├── results/                evaluation + ablation artifacts
+├── tests/                  pytest suite
+├── requirements.txt
+├── .env.example
+└── FINAL_PROJECT_STRUCTURE.md
+```
+
+---
+
+## 12. Limitations
+
+See [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md). In summary:
+
+- The demo corpus is small and curated.
+- The detector is **probabilistic**, not exact — high-risk answers should
+  still receive human review.
+- The system does **not** claim to eliminate hallucinations.
+- It is an **academic demonstration**, not a clinical / legal tool.
+
+---
+
+## 13. Future work
+
+- Scale the corpus to a domain-specific production knowledge base.
+- Replace the local NLI model with a higher-capacity entailment model.
+- Add active-learning loops for detector calibration on user feedback.
+- Add per-user roles + authentication on the admin endpoints.
+- Add streaming responses and incremental sentence verification.
+- Add cross-model verification (use a second LLM as an independent judge).
+
+---
+
+## API quick reference
+
+### `POST /query`
+
+```json
+{ "question": "What does HIPAA protect?", "top_k": 5 }
+```
+
+Response includes: `answer`, `confidence`, `risk`, `hallucination_type`,
+`provider`, `retrieved_sources`, `sentence_analysis`, `detector_signals`.
+
+### `POST /admin/add_document`
+
+```json
+{ "text": "…", "uploader": "admin", "domain": "medical", "verified": true }
+```
+
+### `POST /admin/add_qa`
+
+```json
+{ "question": "…", "answer": "…", "uploader": "admin", "verified": true }
+```
+
+### `GET /logs?limit=50&risk=high&hallucination_type=factual`
+
+Returns the recent audit trail filtered by risk / type.
+
+### `GET /health`
+
+Returns `{ "status": "ok", "service": "halt-rag" }`.
+
+---
+
+### Language we deliberately avoid
+
+- "Hallucination eliminated."
+- "Guaranteed factual."
+- "Verified by AI."
+
+### Language we use
+
+- **Trust-aware.**
+- **Probabilistic.**
+- **Interpretable.**
+- **Auditable.**

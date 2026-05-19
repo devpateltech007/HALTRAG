@@ -1,255 +1,136 @@
-Here’s a more natural, “actually written by a dev” version — less robotic, a bit opinionated, and easier to read:
+# HALT-RAG · System Architecture
 
----
+HALT-RAG is a Trust-Aware Retrieval-Augmented Generation pipeline. It does not
+treat the LLM as an oracle and it does not treat the hallucination detector as
+an oracle either. Every layer is independent and every claim is auditable.
 
-# HALT-RAG — Architecture & Design Notes
-
-*Last updated: April 2026*
-
-## Overview
-
-This project is basically a RAG pipeline with an added twist — instead of just generating answers, we also try to **figure out when the model is hallucinating and why**.
-
-The pipeline is split into three main parts:
-
-1. Retrieve relevant context
-2. Generate an answer
-3. Analyze whether the answer is trustworthy
-
----
-
-## High-Level Flow
+## High-level diagram
 
 ```
-User Query
-    ↓
-Retriever (BM25 → Dense later)
-    ↓
-Top-k Passages
-    ↓
-Generator (LLM)
-    ↓
-Answer
-    ↓
-Hallucination Analyzer
-    ↓
-(Type + Explanation)
+                ┌─────────────────────────────┐
+                │           Question          │
+                └──────────────┬──────────────┘
+                               │
+                               ▼
+                ┌─────────────────────────────┐
+                │  Dense retriever (MiniLM    │
+                │  embeddings + FAISS index)  │
+                └──────────────┬──────────────┘
+                               │ top-K contexts
+                               ▼
+                ┌─────────────────────────────┐
+                │  Generator (Gemini, with    │
+                │  extractive fallback)       │
+                └──────────────┬──────────────┘
+                               │ answer
+                               ▼
+        ┌──────────────────────────────────────────┐
+        │  Deep Hallucination Detector             │
+        │  - sentence segmentation                 │
+        │  - NLI entailment vs context             │
+        │  - semantic similarity                   │
+        │  - lexical overlap                       │
+        │  - retrieval strength                    │
+        │  → grounded / uncertain / hallucinated   │
+        └──────────────┬───────────────────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────────────────┐
+        │  Hallucination classifier                │
+        │  type ∈ {faithful, factual,              │
+        │          contextual, reasoning}          │
+        └──────────────┬───────────────────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────────────────┐
+        │  Detector validation                     │
+        │  multi-signal confidence + agreement     │
+        └──────────────┬───────────────────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────────────────┐
+        │  Confidence scoring + risk bucketing     │
+        └──────────────┬───────────────────────────┘
+                       │
+                       ▼
+        ┌──────────────────────────────────────────┐
+        │  API response → Next.js UI               │
+        │  Append-only JSONL audit log             │
+        └──────────────────────────────────────────┘
 ```
 
----
-
-## 1. Retriever
-
-**What it does:**
-Fetches the most relevant chunks of text for a given query.
-
-**Current approach:**
-
-* Started with a super basic token-overlap baseline (just to get things moving)
-* Next step is plugging in **BM25** using `rank_bm25`
-
-**Planned upgrades:**
-
-* Move to **dense retrieval** (likely a bi-encoder setup)
-
-  * Options: Contriever, sentence-transformers, etc.
-* Compare lexical vs dense performance
-
-**Metrics we care about:**
-
-* Recall@k
-* MRR
-
-**Status:**
-Baseline works. BM25 is the next quick win.
-
----
-
-## 2. Generator
-
-**What it does:**
-Takes the retrieved passages + query and generates an answer.
-
-**Plan:**
-
-* Use an instruction-tuned open model (something like Llama or Mistral)
-* Keep prompting simple:
-
-  * Provide context
-  * Ask the model to answer *strictly based on it*
-
-**Things to experiment with:**
-
-* Zero-shot vs few-shot prompts
-* How strict we want to be about “don’t use outside knowledge”
-
-**Open question:**
-
-* Model size vs latency vs cost (still undecided)
-
-**Status:**
-Not built yet.
-
----
-
-## 3. Hallucination Analyzer (core idea)
-
-**What it does:**
-Given:
-
-* query
-* retrieved passages
-* generated answer
-
-…it tries to detect:
-
-* **Is this hallucinated?**
-* **If yes, what kind?**
-
----
-
-## Hallucination Types (working taxonomy)
-
-We’re breaking hallucinations into 4 buckets:
-
-### 1. Factual
-
-* Straight-up wrong facts
-* Example: wrong dates, wrong entities
-
-**Signal:**
-
-* Conflicts with known facts or entities
-
----
-
-### 2. Contextual
-
-* Not supported by retrieved passages
-
-**Signal:**
-
-* No strong entailment between answer and any passage
-
----
-
-### 3. Reasoning
-
-* The logic is broken even if facts look okay
-
-**Signal:**
-
-* Weird jumps in reasoning / non-sequitur conclusions
-
----
-
-### 4. Faithfulness
-
-* Twists or exaggerates what the source says
-
-**Signal:**
-
-* Meaning drift, tone flip, overgeneralization
-
----
-
-## Detection Strategy
-
-### Phase 1 (current)
-
-* Heuristics:
-
-  * token overlap
-  * simple entity checks
-* Basically just to validate the pipeline
-
----
-
-### Phase 2
-
-* Add **NLI model** (entailment-based)
-
-  * Compare each answer sentence with passages
-  * Check if it’s supported / contradicted
-
----
-
-### Phase 3
-
-* Train a lightweight classifier
-
-  * Inputs:
-
-    * NLI scores
-    * lexical features
-  * Output:
-
-    * hallucination type
-
----
-
-**Status:**
-Only heuristic prototype exists right now.
-
----
-
-## Evaluation Plan
-
-We’ll evaluate each piece separately first:
-
-### Retrieval
-
-* Recall@5 / @10
-* MRR
-
-### Generation
-
-* Token F1
-* ROUGE-L
-
-### Hallucination Detection
-
-* Precision / Recall / F1 (binary)
-
-### Hallucination Typing
-
-* Macro F1 across 4 categories
-
----
-
-## Dataset Problem
-
-There’s no clean dataset for **typed hallucinations**, so:
-
-* We’ll probably annotate a small dataset ourselves
-* Keep it focused and high quality instead of large
-
----
-
-## What’s Missing (a lot 😅)
-
-* No generator wired up yet
-* No dense retrieval
-* No NLI integration
-* No end-to-end pipeline
-* No eval pipeline
-* No trained models
-* No UI / API
-
----
-
-## Notes / Thoughts
-
-* The hallucination analyzer is the real differentiator here
-* Need to be careful not to over-engineer too early
-* Getting a clean eval setup will matter more than model tweaks initially
-
----
-
-If you want, I can also:
-
-* make this README more GitHub-polished
-* turn it into a pitch deck (for hackathons / demos)
-* or help you design the actual folder structure + code skeleton next
-
-Just tell me 👍
+## Components
+
+### Retrieval — `src/retrieval.py`
+- Embedding model: `sentence-transformers/all-MiniLM-L6-v2` with a deterministic
+  local fallback when weights are unavailable.
+- Index: FAISS L2/inner-product index persisted under `data/corpus/`.
+- Dynamic corpus is appended to `data/dynamic_knowledge.jsonl` and reloaded on
+  each admin update.
+
+### Generation — `src/generation.py`
+- Gemini provider when `GEMINI_API_KEY` is configured (`GENERATION_PROVIDER`).
+- Deterministic extractive fallback that stitches together top retrieved
+  sentences. Always returns an answer + provider tag.
+
+### Sentence-level verifier — `src/deep_hallucination_detector.py`
+- Splits the answer into sentences.
+- For each sentence, computes:
+  - NLI entailment / contradiction (via `src/models/nli_model.py`)
+  - Semantic similarity (via `src/models/embedding_model.py`)
+  - Lexical overlap with retrieved context
+  - Retrieval strength (max retrieval score among supporting contexts)
+- Labels each sentence `grounded`, `uncertain`, or `hallucinated`.
+
+### Hallucination classifier — `src/hallucination_classifier.py`
+- Aggregates sentence-level labels into one of:
+  - `faithful` — strongly supported by retrieved sources
+  - `factual` — possible factual hallucination
+  - `contextual` — mismatch with retrieved evidence
+  - `reasoning` — unsupported inferential step
+
+### Detector validator — `src/detector_validation.py`
+- Returns `detector_confidence`, `agreement_level` (low/medium/high), and a
+  `signal_disagreement` flag — used to lower trust when signals fight each other.
+
+### Confidence scoring — `src/confidence.py`
+- Composes retrieval quality + sentence grounding + detector validation +
+  signal agreement into a single 0–1 trust score and a risk bucket.
+
+### Knowledge updates — `src/knowledge_update.py`
+- Chunk + embed + persist (FAISS / vector store).
+- Reload retriever — no LLM retraining required.
+
+### Audit logging — `src/audit.py`
+- Append-only JSONL trace at `logs/audit.jsonl`:
+  question, answer, confidence, risk, hallucination type, detector signals,
+  retrieved source IDs, provider, latency.
+
+## API surface — `backend/main.py`
+
+| Method | Path                    | Description                                |
+| ------ | ----------------------- | ------------------------------------------ |
+| GET    | `/health`               | Liveness probe                             |
+| POST   | `/query`                | Run full retrieve → generate → verify trace|
+| POST   | `/admin/add_document`   | Insert verified document into vector store |
+| POST   | `/admin/add_qa`         | Insert verified Q&A into vector store      |
+| GET    | `/logs`                 | Read audit log (filter by risk / type)     |
+
+## Frontend — `frontend/`
+
+Next.js 14 app, dark glassmorphism theme, Tailwind CSS. Pages:
+
+- `/` — Dashboard (status pills, pipeline overview, recent activity).
+- `/ask` — Query console (answer, confidence, risk, type, detector panel,
+  sentence-level grounding, source evidence).
+- `/admin` — Knowledge update (document or Q&A).
+- `/logs` — Audit log table with filters by risk / type / provider.
+- `/about` — Methodology and the "is the detector hallucinating?" answer.
+
+## Design principles
+
+1. **Separation of concerns** — generator and verifier never share weights.
+2. **Probabilistic** — trust is a graded signal, not a yes/no verdict.
+3. **Transparent** — every signal, every score, every source is exposed.
+4. **Auditable** — every query is JSONL-logged with full trace.
+5. **Dynamic** — knowledge updates without retraining.

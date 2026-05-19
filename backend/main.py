@@ -1,4 +1,5 @@
 from __future__ import annotations
+import logging
 from typing import Any, Literal
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,6 +13,12 @@ from src.hallucination_classifier import classify_hallucination
 from src.knowledge_update import KnowledgeUpdater
 from src.retrieval import build_retriever
 
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 Risk = Literal["low", "medium", "high"]
 HallucinationType = Literal["faithful", "factual", "contextual", "reasoning"]
@@ -98,17 +105,21 @@ class HaltRAGService:
 
     def get_retriever(self):
         if self._retriever is None:
+            logger.info("Building retriever for HALT-RAG service.")
             self._retriever = build_retriever()
         return self._retriever
 
     def reload(self) -> None:
+        logger.info("Reloading retriever index after knowledge update.")
         self._retriever = build_retriever(force_rebuild=True)
 
     def run_query(self, question: str, top_k: int = 5, log: bool = True, **_: Any) -> dict[str, Any]:
         clean_question = (question or "").strip()
         if not clean_question:
+            logger.warning("Rejected empty query request.")
             raise ValueError("Question cannot be empty.")
 
+        logger.info("Running query. chars=%d top_k=%d audit_log=%s.", len(clean_question), top_k, log)
         retrieved_sources = self.get_retriever().retrieve(clean_question, top_k=top_k)
         generation = generate_with_provider(clean_question, retrieved_sources)
         answer = generation["answer"]
@@ -141,6 +152,15 @@ class HaltRAGService:
 
         if log:
             self.audit_logger.log_query(response)
+        logger.info(
+            "Query completed. provider=%s risk=%s hallucination_type=%s confidence=%.4f sources=%d sentences=%d.",
+            response["provider"],
+            response["risk"],
+            response["hallucination_type"],
+            response["confidence"],
+            len(response["retrieved_sources"]),
+            len(response["sentence_analysis"]),
+        )
         return response
 
     def add_document(
@@ -159,6 +179,12 @@ class HaltRAGService:
             title=title,
         )
         self.reload()
+        logger.info(
+            "Document update completed. source_id=%s chunks=%d verified=%s.",
+            result["source_id"],
+            result["chunks_added"],
+            result["verified"],
+        )
         return result
 
     def add_qa(
@@ -177,6 +203,12 @@ class HaltRAGService:
             verified=verified,
         )
         self.reload()
+        logger.info(
+            "Q&A update completed. source_id=%s chunks=%d verified=%s.",
+            result["source_id"],
+            result["chunks_added"],
+            result["verified"],
+        )
         return result
 
     def read_logs(self, limit: int = 100, **filters: Any) -> list[dict[str, Any]]:
@@ -318,4 +350,3 @@ def _sentence_payload(item: dict[str, Any]) -> dict[str, Any]:
 
 
 app = create_app()
-
